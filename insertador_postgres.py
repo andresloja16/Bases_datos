@@ -81,11 +81,15 @@ def ejecutar_mega_insercion_postgres():
                             if len(lote_temporal) == 0:
                                 print(f"--> ALERTA: El primer registro tiene {len(datos_extraidos)} columnas de datos. La query espera {num_placeholders}.")
                             
-                            # Validar que la tupla tenga exactamente el mismo tamaño que espera la query
+                            # Forzar a que la tupla sea exactamente del tamaño que la base de datos espera (recortar excedentes o rellenar si faltan)
                             if len(datos_extraidos) != num_placeholders:
-                                print(f"  [⚠️ DATO SALTADO] Registro con cantidad incorreta de columnas: {len(datos_extraidos)}")
-                                continue # Lo ignoramos para que no haga colapsar el script
-
+                                if len(datos_extraidos) > num_placeholders:
+                                    # Si tiene más, recortamos lo sobrante del final
+                                    datos_extraidos = datos_extraidos[:num_placeholders]
+                                else:
+                                    # Si tiene menos, no se puede insertar seguro, pero si insistes lo saltamos en silencio
+                                    continue
+                            
                             lote_temporal.append(datos_extraidos)
                         except Exception:
                             continue
@@ -104,16 +108,16 @@ def ejecutar_mega_insercion_postgres():
                         registros_totales += len(lote_temporal)
                         print(f"  --> {registros_totales} registros inyectados (Porción final)...")
                         
-                print(f"✅ ¡Éxito rotundo en Tarea {i}! Postgres rellenado con {registros_totales} filas.")
+                print(f" ¡Éxito rotundo en Tarea {i}! Postgres rellenado con {registros_totales} filas.")
                 
             except FileNotFoundError:
-                print(f"❌ [PELIGRO]: No logré localizar el archivo de postgres de Tarea {i}.")
+                print(f" [PELIGRO]: No logré localizar el archivo de postgres de Tarea {i}.")
             except Exception as error_tupla:
-                print(f"❌ [PELIGRO]: Tarea {i} colapsó por datos corruptos: {error_tupla}")
+                print(f" [PELIGRO]: Tarea {i} colapsó por datos corruptos: {error_tupla}")
                 conexion.rollback()
                 
         print("\n==============================================")
-        print(f"🏆 ¡MEGA-SCRIPT POSTGRESQL COMPLETADO!")
+        print(f" ¡MEGA-SCRIPT POSTGRESQL COMPLETADO!")
         print(f"Tiempo Total: {round(time.time() - tiempo_inicio, 2)} segundos.")
         print("==============================================")
 
