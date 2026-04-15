@@ -4,11 +4,11 @@ import time
 import ast
 
 # 1. CONFIGURACIÓN DE POSTGRESQL
-SERVER = 'localhost'      
-DATABASE = 'base_prueba'       # Cambia esto por tu base de datos postgres real
-USERNAME = 'postgres'       # Usuario por defecto de Postgres
-PASSWORD = '14789632'     # Tu contraseña de Postgres
-PUERTO = '5432'             # Puerto por defecto de Postgres
+SERVER = '172.18.46.16'      
+DATABASE = 'datawarehouse_ja'       # Cambia esto por tu base de datos postgres real
+USERNAME = 'publica_contenido'       # Usuario por defecto de Postgres
+PASSWORD = 'publica_contenido'     # Tu contraseña de Postgres
+PUERTO = '6432'             # Puerto por defecto de Postgres
 
 # 2. EL MEGA-CEREBRO: LISTA DE TAREAS (Para múltiples archivos Postgres)
 TAREAS = [
