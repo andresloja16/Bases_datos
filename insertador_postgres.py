@@ -74,6 +74,8 @@ def ejecutar_mega_insercion_postgres():
                         
                         try:
                             datos_extraidos = ast.literal_eval(linea_limpia)
+                            if len(lote_temporal) == 0:
+                                print(f"--> ALERTA: El archivo de texto tiene {len(datos_extraidos)} columnas de datos.")
                             lote_temporal.append(datos_extraidos)
                         except Exception:
                             continue 
