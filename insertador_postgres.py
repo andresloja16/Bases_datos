@@ -14,7 +14,7 @@ PUERTO = '5432'             # Puerto por defecto de Postgres
 TAREAS = [
     {
         "archivo": r"C:\Users\Asus\OneDrive\Escritorio\INSERT INTO Series (titulo, descrip.txt",
-        "query": "INSERT INTO series (titulo, descripcion, año_lanzamiento, genero) VALUES (%s, %s, %s, %s)" 
+        "query": "INSERT INTO jdw_dashboards.transaccion_perfil_riesgo (codigo_fecha_corte, codigo_socio, tipo_relacion, es_empleado, es_directivo, lista_consep, tipo_identificacion, numero_identificacion, nombre, nacionalidad, direccion, actividad_economica, total_ingreso_socio, total_ingreso_conyuge, total_gasto_socio, total_gasto_conyuge, total_patrimonio_socio, total_patrimonio_conyuge, genero, edad_cumplida, estado_civil, codigo_socio_con, tipo_identificacion_con, numero_identificacion_con, nombre_cony, codigo_socio_rep, tipo_identificacion_rep, numero_identificacion_rep, nombre_rep, pep_vinculado, descripcion_pep_vinculado, tipo_producto, canal_transaccion, descripcion_movimiento, numero_cuenta, nombre_oficina_soc, codigo_fecha_apertura_cue, codigo_fecha_transaccion, numero_transaccion, valor_total_transaccion, tipo_transaccion, nombre_beneficiario, nombre_institucion_ben, cuenta_ben, pais_destino, nombre_oficina_tra, descripcion_licitud_fon, perfil_economico, descripcion_perfil_eco, perfil_transaccional, descripcion_perfil_tra, perfil, descripcion_perfil) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING"
         # NOTA: Para evadir duplicados debes crear clave UNIQUE en tu Postgres y luego cambiar tu query a:
         # "INSERT INTO series (...) VALUES (...) ON CONFLICT DO NOTHING"
     }
@@ -56,8 +56,20 @@ def ejecutar_mega_insercion_postgres():
                     for linea in archivo:
                         linea_limpia = linea.strip()
                         
+                        # Extraer datos si la línea viene con el comando "INSERT INTO ..." completo
+                        ignorar_mayus = linea_limpia.upper()
+                        if " VALUES" in ignorar_mayus:
+                            linea_limpia = linea_limpia[ignorar_mayus.find(" VALUES") + 7:].strip()
+                        elif ignorar_mayus.startswith("VALUES"):
+                            linea_limpia = linea_limpia[6:].strip()
+                            
+                        # Si no es una tupla, la ignoramos
                         if not linea_limpia.startswith('('): continue
+                        
+                        # Quitar comas o punto y coma sobrantes del final
                         if linea_limpia.endswith(',') or linea_limpia.endswith(';'): linea_limpia = linea_limpia[:-1]
+                        
+                        # Cambiar la sintaxis SQL 'NULL' al equivalente en Python 'None'
                         linea_limpia = linea_limpia.replace('NULL', 'None')
                         
                         try:
