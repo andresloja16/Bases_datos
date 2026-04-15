@@ -81,15 +81,35 @@ def ejecutar_mega_insercion_postgres():
                             if len(lote_temporal) == 0:
                                 print(f"--> ALERTA: El primer registro tiene {len(datos_extraidos)} columnas de datos. La query espera {num_placeholders}.")
                             
-                            # Forzar a que la tupla sea exactamente del tamaño que la base de datos espera (recortar excedentes o rellenar si faltan)
+                            # Forzar a que la tupla sea exactamente del tamaño que la base de datos espera
                             if len(datos_extraidos) != num_placeholders:
+                                # ¡MÉTODO A PRUEBA DE BALAS PARA VER SI SE DESCUADRAN LAS COLUMNAS!
+                                # Extraemos los nombres de las columnas del query para compararlos
+                                lista_columnas = consulta_sql[consulta_sql.find("(")+1 : consulta_sql.find(")")].replace(" ", "").split(",")
+                                print("\n=========================================================")
+                                print(f"🛑 ALERTA: Esta fila del TXT tiene {len(datos_extraidos)} datos, pero la base de datos espera {num_placeholders}.")
+                                print("Vamos a comprobar qué dato caería en cada columna para evitar desastres:")
+                                
+                                # Mostramos las primeras 10 y las últimas 5 columnas para que el usuario compruebe el cuadre
+                                for indice in range(min(10, num_placeholders)):
+                                    print(f"Columna: {lista_columnas[indice].ljust(30)} => Recibirá el Dato: {datos_extraidos[indice]}")
+                                    
+                                print("... (mostrando el final)")
+                                for indice in range(num_placeholders - 5, num_placeholders):
+                                    print(f"Columna: {lista_columnas[indice].ljust(30)} => Recibirá el Dato: {datos_extraidos[indice]}")
+                                
+                                # Si hay datos extra que sobran al final, los mostramos
                                 if len(datos_extraidos) > num_placeholders:
-                                    # Si tiene más, recortamos lo sobrante del final
-                                    datos_extraidos = datos_extraidos[:num_placeholders]
-                                else:
-                                    # Si tiene menos, no se puede insertar seguro, pero si insistes lo saltamos en silencio
-                                    continue
-                            
+                                    print(f"⚠️ DATOS SOBRANTES QUE QUEDARÍAN FUERA:")
+                                    for extra in range(num_placeholders, len(datos_extraidos)):
+                                        print(f"-> Dato fuera de lugar: {datos_extraidos[extra]}")
+                                
+                                print("=========================================================")
+                                print("Si los datos SÍ caen en su respectiva columna, entonces todo está en orden y el TXT simplemente trajo columnas extra al final.")
+                                print("Si notas que la 'edad' aparece en el campo 'género', ¡entonces los datos se recorrieron!")
+                                import sys
+                                sys.exit("Script pausado por seguridad. Revisa la tabla de arriba. Quita estas lineas de tu código cuando estés seguro.")
+                                
                             lote_temporal.append(datos_extraidos)
                         except Exception:
                             continue
