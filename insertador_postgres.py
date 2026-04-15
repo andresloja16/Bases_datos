@@ -74,11 +74,21 @@ def ejecutar_mega_insercion_postgres():
                         
                         try:
                             datos_extraidos = ast.literal_eval(linea_limpia)
+                            
+                            # Contar parámetros en el query (%s)
+                            num_placeholders = consulta_sql.count("%s")
+                            
                             if len(lote_temporal) == 0:
-                                print(f"--> ALERTA: El archivo de texto tiene {len(datos_extraidos)} columnas de datos.")
+                                print(f"--> ALERTA: El primer registro tiene {len(datos_extraidos)} columnas de datos. La query espera {num_placeholders}.")
+                            
+                            # Validar que la tupla tenga exactamente el mismo tamaño que espera la query
+                            if len(datos_extraidos) != num_placeholders:
+                                print(f"  [⚠️ DATO SALTADO] Registro con cantidad incorreta de columnas: {len(datos_extraidos)}")
+                                continue # Lo ignoramos para que no haga colapsar el script
+
                             lote_temporal.append(datos_extraidos)
                         except Exception:
-                            continue 
+                            continue
                         
                         # Inserción de lote MASIVA de postgres (100x más rápida)
                         if len(lote_temporal) == TAMANO_LOTE:
